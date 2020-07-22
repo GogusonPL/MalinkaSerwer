@@ -1,13 +1,26 @@
 ﻿using MalinkaSerwer.Models;
 using Newtonsoft.Json;
 using System;
+using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+using System.Timers;
 
 namespace MalinkaSerwer.Services
 {
     public class DomoticzRequestHandler : IDomoticzRequestHandler
     {
+        public bool IsSmartHomeOn { get; set; }
+        Timer timer;
+        public DomoticzRequestHandler()
+        {
+            timer = new Timer();
+            timer.Elapsed += CheckSmartHome;
+            timer.Interval = 10000;
+            timer.Start();
+        }
+
+
         public async Task<DomoticzResponse> GetCurrentInfo()
         {
             using (var client = new HttpClient())
@@ -68,6 +81,24 @@ namespace MalinkaSerwer.Services
                     return JsonConvert.DeserializeObject<SimpleResult>(jsonString);
                 }
                 return null;
+            }
+        }
+        private async void CheckSmartHome(object sender, ElapsedEventArgs e)
+        {
+            if (!IsSmartHomeOn)
+                return;
+
+            int temperature = 0;
+            var result = await GetCurrentInfo();
+            var temp = result.result.Where(x => x.Name == "Temperature w pokoju");
+            if (temp.Count() != 0)
+            {
+                string tempString = temp.FirstOrDefault().Data[0].ToString() + temp.FirstOrDefault().Data[1].ToString();
+                temperature = int.Parse(tempString);
+                if (temperature >= 23)
+                    await SetAc(true);
+                else
+                    await SetAc(false);
             }
         }
     }
