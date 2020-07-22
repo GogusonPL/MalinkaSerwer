@@ -2,6 +2,8 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using System.Linq;
+using System.Timers;
 
 namespace MalinkaSerwer.Controllers
 {
@@ -9,6 +11,8 @@ namespace MalinkaSerwer.Controllers
     [ApiController]
     public class Raspoint : ControllerBase
     {
+        Timer timer;
+        bool IsSmartHomeOn = false;
         private readonly ILogger<Raspoint> logger;
         private readonly IDomoticzRequestHandler domoticz;
 
@@ -16,7 +20,29 @@ namespace MalinkaSerwer.Controllers
         {
             this.logger = logger;
             this.domoticz = domoticz;
+            timer = new Timer();
+            timer.Elapsed += CheckSmartHome;
+            timer.Interval = 10000;
+            timer.Start();
         }
+
+        private void CheckSmartHome(object sender, ElapsedEventArgs e)
+        {
+            if (!IsSmartHomeOn)
+                return;
+
+            int temperature = 0;
+            var result = domoticz.GetCurrentInfo();
+            var temp = result.result.Where(x => x.Name == "Temperature w pokoju");
+            if (temp.Count() != 0)
+            {
+                string tempString = temp.FirstOrDefault().Data[0].ToString() + temp.FirstOrDefault().Data[1].ToString();
+                temperature = int.Parse(tempString);
+            }
+
+
+        }
+
         [HttpGet("[action]", Name = "GetDomoticzStatus")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public IActionResult GetDomoticzStatus()
