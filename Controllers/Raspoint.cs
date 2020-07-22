@@ -43,8 +43,6 @@ namespace MalinkaSerwer.Controllers
                 else
                     domoticz.SetAc(false);
             }
-
-
         }
 
         [HttpGet("[action]", Name = "GetDomoticzStatus")]
@@ -83,12 +81,12 @@ namespace MalinkaSerwer.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public IActionResult SetSmartHome(string mode)
         {
-            bool setter = false;
             if (mode == "on")
-                setter = true;
+                IsSmartHomeOn = true;
+            else
+                IsSmartHomeOn = false;
 
-            var result = domoticz.SetAc(setter);
-            return Ok(result);
+            return Ok();
         }
 
     }
