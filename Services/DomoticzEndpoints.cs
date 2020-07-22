@@ -5,7 +5,12 @@ using System.Threading.Tasks;
 
 namespace MalinkaSerwer.Services
 {
-    public class DomoticzEndpoints
+    public static class DomoticzEndpoints
     {
+        public static string AcOnEndpoint = "";
+        public static string AcOffEndpoint = "";
+        public static string LighOnEndpoint = "";
+        public static string LightOffEndpoint = "";
+        public static string GetDataEndpoint = "";
     }
 }
