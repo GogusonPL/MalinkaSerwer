@@ -1,10 +1,26 @@
 ﻿using MalinkaSerwer.Models;
 using System.IO;
+using System.Timers;
 
 namespace MalinkaSerwer.Services
 {
     public class DomoticzRequestHandlerMock : IDomoticzRequestHandler
     {
+        Timer timer;
+        public DomoticzRequestHandlerMock()
+        {
+            timer = new Timer();
+            timer.Elapsed += CheckSmartHome;
+            timer.Interval = 10000;
+            timer.Start();
+
+        }
+
+        private void CheckSmartHome(object sender, ElapsedEventArgs e)
+        {
+            throw new System.NotImplementedException();
+        }
+
         public DomoticzResponse GetCurrentInfo()
         {
             var jsonData = File.ReadAllText("domoticzResponse.json");
