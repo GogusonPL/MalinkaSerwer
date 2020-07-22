@@ -38,6 +38,10 @@ namespace MalinkaSerwer.Controllers
             {
                 string tempString = temp.FirstOrDefault().Data[0].ToString() + temp.FirstOrDefault().Data[1].ToString();
                 temperature = int.Parse(tempString);
+                if (temperature >= 23)
+                    domoticz.SetAc(true);
+                else
+                    domoticz.SetAc(false);
             }
 
 
