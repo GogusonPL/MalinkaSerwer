@@ -12,8 +12,6 @@ namespace MalinkaSerwer.Controllers
     [ApiController]
     public class Raspoint : ControllerBase
     {
-        Timer timer;
-        bool IsSmartHomeOn = false;
         private readonly ILogger<Raspoint> logger;
         private readonly IDomoticzRequestHandler domoticz;
 
@@ -21,29 +19,6 @@ namespace MalinkaSerwer.Controllers
         {
             this.logger = logger;
             this.domoticz = domoticz;
-            timer = new Timer();
-            timer.Elapsed += CheckSmartHome;
-            timer.Interval = 10000;
-            timer.Start();
-        }
-
-        private async void CheckSmartHome(object sender, ElapsedEventArgs e)
-        {
-            if (!IsSmartHomeOn)
-                return;
-
-            int temperature = 0;
-            var result = await domoticz.GetCurrentInfo();
-            var temp = result.result.Where(x => x.Name == "Temperature w pokoju");
-            if (temp.Count() != 0)
-            {
-                string tempString = temp.FirstOrDefault().Data[0].ToString() + temp.FirstOrDefault().Data[1].ToString();
-                temperature = int.Parse(tempString);
-                if (temperature >= 23)
-                    await domoticz.SetAc(true);
-                else
-                    await domoticz.SetAc(false);
-            }
         }
 
         [HttpGet("[action]", Name = "GetDomoticzStatus")]
@@ -80,12 +55,12 @@ namespace MalinkaSerwer.Controllers
         [HttpPost("[action]/{mode:length(2,3)}")]
         [ProducesResponseType(StatusCodes.Status202Accepted)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> SetSmartHome(string mode)
+        public IActionResult SetSmartHome(string mode)
         {
             if (mode == "on")
-                IsSmartHomeOn = true;
+                domoticz.IsSmartHomeOn = true;
             else
-                IsSmartHomeOn = false;
+                domoticz.IsSmartHomeOn = false;
 
             return Ok();
         }
